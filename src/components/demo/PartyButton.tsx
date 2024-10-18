@@ -25,13 +25,12 @@ export const PartyButton = () => {
               // content: <div className="flex gap-2">hi</div>,
             })
 
-            const intervalId = setInterval(
-              () =>
-                streamToast({
-                  title: `Still there at ${new Date().toISOString()}`,
-                }),
-              20_000,
-            )
+            const intervalId = setInterval(() => {
+              console.log('Still there at ', new Date().toISOString())
+              streamToast({
+                title: `Still there at ${new Date().toISOString()}`,
+              })
+            }, 20_000)
 
             const res = await redisSubscribe({ key: 'party' })
             if (!res.ok || !res.body) {
