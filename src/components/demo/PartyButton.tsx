@@ -1,3 +1,4 @@
+import { redisSubscribe } from '@/lib/redis'
 import { superAction } from '@/super-action/action/createSuperAction'
 import { ActionButton } from '@/super-action/button/ActionButton'
 import { PartyPopper } from 'lucide-react'
@@ -18,29 +19,37 @@ export const PartyButton = () => {
         action={async () => {
           'use server'
 
-          console.log('hello from edge')
+          return superAction(async ({ streamToast }) => {
+            console.log('hello from edge')
 
-          // We have to wrap the action in a superAction to enable fun stuff:
-          return superAction(async ({ streamDialog }) => {
-            streamDialog({
+            streamToast({
               title: 'Party Streaming...',
-              content: <div className="flex gap-2">hi</div>,
+              // content: <div className="flex gap-2">hi</div>,
             })
 
-            for (let i = 0; i < 10; i++) {
-              await new Promise((resolve) => setTimeout(resolve, 1000))
-              streamDialog({
-                content: (
-                  <div className="flex gap-2">
-                    {[...Array(i + 1)].map((_, index) => (
-                      <div key={index} className="animate-spin">
-                        🎉
-                      </div>
-                    ))}
-                  </div>
-                ),
-              })
+            const res = await redisSubscribe({ key: 'party' })
+            if (!res.ok || !res.body) {
+              console.error('Failed to subscribe to Redis')
+              return
             }
+            const reader = res.body.getReader()
+            let message = null
+            while (true) {
+              const { done, value } = await reader.read()
+              const text = new TextDecoder().decode(value)
+              if (text.startsWith('data: message,party,')) {
+                message = JSON.parse(text.split(',')[2])
+                console.log(message)
+                break
+              }
+            }
+            reader.cancel()
+
+            streamToast({
+              title: `You said: ${message.data}`,
+            })
+
+            // console.log(await res.text())
           })
         }}
       >

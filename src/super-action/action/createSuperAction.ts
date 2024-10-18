@@ -49,6 +49,7 @@ type SuperActionContext<Result, Input> = {
 export const superAction = async <Result, Input>(
   action: (options: {
     streamDialog: (dialog: SuperActionDialog) => void
+    streamToast: (toast: SuperActionToast) => void
   }) => Promise<Result>,
 ) => {
   let next = createResolvablePromise<SuperActionResponse<Result, Input>>()
@@ -74,8 +75,12 @@ export const superAction = async <Result, Input>(
     ctx.chain({ dialog })
   }
 
+  const streamToast = (toast: SuperActionToast) => {
+    ctx.chain({ toast })
+  }
+
   // Execute Action:
-  action({ streamDialog })
+  action({ streamDialog, streamToast })
     .then((result) => {
       complete({ result })
     })
