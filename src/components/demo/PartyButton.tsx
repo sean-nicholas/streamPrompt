@@ -43,7 +43,7 @@ export const PartyButton = () => {
               const { done, value } = await reader.read()
               console.log('after read')
               const text = new TextDecoder().decode(value)
-              console.log('after text')
+              console.log('after text', text)
               if (text.startsWith('data: message,party,')) {
                 message = JSON.parse(text.split(',')[2])
                 console.log(message)
