@@ -20,41 +20,36 @@ export const PartyButton = () => {
           'use server'
 
           return superAction(async ({ streamToast }) => {
-            console.log('hello from edge')
-
             streamToast({
               title: 'Party Streaming...',
               // content: <div className="flex gap-2">hi</div>,
             })
 
-            console.log('subscribing to party')
             const res = await redisSubscribe({ key: 'party' })
-            console.log('res here')
             if (!res.ok || !res.body) {
               console.error('Failed to subscribe to Redis')
               return
             }
-            console.log('after ok check')
             const reader = res.body.getReader()
             let message = ''
             let data = null
-            console.log('before while')
             while (true) {
-              console.log('in while')
               const { done, value } = await reader.read()
-              console.log('after read')
               const text = new TextDecoder().decode(value)
-              console.log('after text', text)
               message += text
-              console.log('message', message)
-              if (message.startsWith('data: message,party,')) {
+              const parts = message.split('\n')
+              console.log('parts', parts)
+              const dataPart = parts.find((part) =>
+                part.includes('data: message,party,'),
+              )
+
+              if (dataPart) {
                 try {
                   const finalMessage = JSON.parse(text.split(',')[2])
                   console.log('finalMessage', finalMessage)
                   data = finalMessage.data
                   break
                 } catch (error) {}
-                break
               }
             }
             reader.cancel()
