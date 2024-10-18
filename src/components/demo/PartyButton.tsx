@@ -42,10 +42,16 @@ export const PartyButton = () => {
               const dataPart = parts.find((part) =>
                 part.includes('data: message,party,'),
               )
+              console.log('dataPart', dataPart)
 
               if (dataPart) {
                 try {
-                  const finalMessage = JSON.parse(text.split(',')[2])
+                  const jsonString = dataPart.replace(
+                    'data: message,party,',
+                    '',
+                  )
+                  console.log('jsonString', jsonString)
+                  const finalMessage = JSON.parse(jsonString)
                   console.log('finalMessage', finalMessage)
                   data = finalMessage.data
                   break
