@@ -1,4 +1,3 @@
-import { createServerContext } from '@sodefa/next-server-context'
 import {
   getRedirectStatusCodeFromError,
   getRedirectTypeFromError,
@@ -45,10 +44,12 @@ type SuperActionContext<Result, Input> = {
   chain: (val: SuperActionResponse<Result, Input>) => void
 }
 
-const serverContext = createServerContext<SuperActionContext<any, any>>()
+// const serverContext = createServerContext<SuperActionContext<any, any>>()
 
 export const superAction = async <Result, Input>(
-  action: () => Promise<Result>,
+  action: (options: {
+    streamDialog: (dialog: SuperActionDialog) => void
+  }) => Promise<Result>,
 ) => {
   let next = createResolvablePromise<SuperActionResponse<Result, Input>>()
   const firstPromise = next.promise
@@ -66,10 +67,15 @@ export const superAction = async <Result, Input>(
     chain,
   }
 
-  serverContext.set(ctx)
+  // serverContext.set(ctx)
+
+  const streamDialog = (dialog: SuperActionDialog) => {
+    // const ctx = serverContext.getOrThrow()
+    ctx.chain({ dialog })
+  }
 
   // Execute Action:
-  action()
+  action({ streamDialog })
     .then((result) => {
       complete({ result })
     })
@@ -118,19 +124,19 @@ export type SuperAction<Result, Input> = (
 export type SuperActionWithInput<Input> = SuperAction<unknown, Input>
 export type SuperActionWithResult<Result> = SuperAction<Result, unknown>
 
-export const streamToast = (toast: SuperActionToast) => {
-  const ctx = serverContext.getOrThrow()
-  ctx.chain({ toast })
-}
+// export const streamToast = (toast: SuperActionToast) => {
+//   const ctx = serverContext.getOrThrow()
+//   ctx.chain({ toast })
+// }
 
-export const streamDialog = (dialog: SuperActionDialog) => {
-  const ctx = serverContext.getOrThrow()
-  ctx.chain({ dialog })
-}
+// export const streamDialog = (dialog: SuperActionDialog) => {
+//   const ctx = serverContext.getOrThrow()
+//   ctx.chain({ dialog })
+// }
 
-export const streamAction = <Result>(
-  action: SuperAction<Result, undefined>,
-) => {
-  const ctx = serverContext.getOrThrow()
-  ctx.chain({ action })
-}
+// export const streamAction = <Result>(
+//   action: SuperAction<Result, undefined>,
+// ) => {
+//   const ctx = serverContext.getOrThrow()
+//   ctx.chain({ action })
+// }
