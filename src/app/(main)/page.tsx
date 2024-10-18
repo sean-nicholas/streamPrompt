@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button'
 import { ExternalLink } from 'lucide-react'
 import Link from 'next/link'
 
+const runtime = 'edge'
+
 export default async function Page() {
   return (
     <>

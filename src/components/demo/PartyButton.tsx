@@ -26,6 +26,8 @@ export const PartyButton = () => {
         action={async () => {
           'use server'
 
+          console.log('hello from edge')
+
           // We have to wrap the action in a superAction to enable fun stuff:
           return superAction(async () => {
             // Create a streamable UI for in-toast-streaming
