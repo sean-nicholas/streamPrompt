@@ -27,16 +27,23 @@ export const PartyButton = () => {
               // content: <div className="flex gap-2">hi</div>,
             })
 
+            console.log('subscribing to party')
             const res = await redisSubscribe({ key: 'party' })
+            console.log('res here')
             if (!res.ok || !res.body) {
               console.error('Failed to subscribe to Redis')
               return
             }
+            console.log('after ok check')
             const reader = res.body.getReader()
             let message = null
+            console.log('before while')
             while (true) {
+              console.log('in while')
               const { done, value } = await reader.read()
+              console.log('after read')
               const text = new TextDecoder().decode(value)
+              console.log('after text')
               if (text.startsWith('data: message,party,')) {
                 message = JSON.parse(text.split(',')[2])
                 console.log(message)
