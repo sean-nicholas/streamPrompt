@@ -1,5 +1,7 @@
 export const redisSubscribe = ({ key }: { key: string }) => {
-  return fetch(`${process.env.REDIS_URL!}/subscribe/${key}`, {
+  const url = `${process.env.REDIS_URL!}/subscribe/${key}`
+  console.log(url)
+  return fetch(url, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${process.env.REDIS_TOKEN}`,
@@ -9,7 +11,9 @@ export const redisSubscribe = ({ key }: { key: string }) => {
 }
 
 export const redisPublish = ({ key, data }: { key: string; data: string }) => {
-  return fetch(`${process.env.REDIS_URL!}/publish/${key}`, {
+  const url = `${process.env.REDIS_URL!}/publish/${key}`
+  console.log(url)
+  return fetch(url, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${process.env.REDIS_TOKEN}`,
