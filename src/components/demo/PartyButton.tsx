@@ -25,6 +25,14 @@ export const PartyButton = () => {
               // content: <div className="flex gap-2">hi</div>,
             })
 
+            const intervalId = setInterval(
+              () =>
+                streamToast({
+                  title: `Still there at ${new Date().toISOString()}`,
+                }),
+              20_000,
+            )
+
             const res = await redisSubscribe({ key: 'party' })
             if (!res.ok || !res.body) {
               console.error('Failed to subscribe to Redis')
@@ -58,6 +66,7 @@ export const PartyButton = () => {
                 } catch (error) {}
               }
             }
+            clearInterval(intervalId)
             reader.cancel()
 
             streamToast({
