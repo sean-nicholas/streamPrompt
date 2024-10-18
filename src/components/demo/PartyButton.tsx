@@ -24,14 +24,23 @@ export const PartyButton = () => {
           return superAction(async ({ streamDialog }) => {
             streamDialog({
               title: 'Party Streaming...',
-              content: (
-                <div className="flex gap-2">
-                  <div className="animate-spin">🎉</div>
-                  <div className="animate-spin">🎉</div>
-                  <div className="animate-spin">🎉</div>
-                </div>
-              ),
+              content: <div className="flex gap-2">hi</div>,
             })
+
+            for (let i = 0; i < 10; i++) {
+              await new Promise((resolve) => setTimeout(resolve, 1000))
+              streamDialog({
+                content: (
+                  <div className="flex gap-2">
+                    {[...Array(i + 1)].map((_, index) => (
+                      <div key={index} className="animate-spin">
+                        🎉
+                      </div>
+                    ))}
+                  </div>
+                ),
+              })
+            }
           })
         }}
       >
