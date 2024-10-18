@@ -36,7 +36,8 @@ export const PartyButton = () => {
             }
             console.log('after ok check')
             const reader = res.body.getReader()
-            let message = null
+            let message = ''
+            let data = null
             console.log('before while')
             while (true) {
               console.log('in while')
@@ -44,16 +45,22 @@ export const PartyButton = () => {
               console.log('after read')
               const text = new TextDecoder().decode(value)
               console.log('after text', text)
-              if (text.startsWith('data: message,party,')) {
-                message = JSON.parse(text.split(',')[2])
-                console.log(message)
+              message += text
+              console.log('message', message)
+              if (message.startsWith('data: message,party,')) {
+                try {
+                  const finalMessage = JSON.parse(text.split(',')[2])
+                  console.log('finalMessage', finalMessage)
+                  data = finalMessage.data
+                  break
+                } catch (error) {}
                 break
               }
             }
             reader.cancel()
 
             streamToast({
-              title: `You said: ${message.data}`,
+              title: `You said: ${data}`,
             })
 
             // console.log(await res.text())
