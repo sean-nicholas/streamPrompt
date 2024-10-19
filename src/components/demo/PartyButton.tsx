@@ -28,7 +28,7 @@ export const PartyButton = () => {
 
             let count = 0
             while (true) {
-              await new Promise((resolve) => setTimeout(resolve, 5_000))
+              await new Promise((resolve) => setTimeout(resolve, 1_000))
               const message = `Still there. Iteration ${++count}. Run for ${
                 (new Date().getTime() - startedAt.getTime()) / 1000
               } seconds`
