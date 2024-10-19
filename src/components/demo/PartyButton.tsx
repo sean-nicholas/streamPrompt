@@ -3,8 +3,6 @@ import { superAction } from '@/super-action/action/createSuperAction'
 import { ActionButton } from '@/super-action/button/ActionButton'
 import { PartyPopper } from 'lucide-react'
 
-const REDIS_CATCH = 'REDIS_CATCH'
-
 export const PartyButton = () => {
   return (
     <>
@@ -57,97 +55,79 @@ export const PartyButton = () => {
               result: ReadableStreamReadResult<Uint8Array>
             }> | null = null
             while (true) {
-              if (!readerPromise) {
-                readerPromise = reader
-                  .read()
-                  .then((result) => ({
+              try {
+                if (!readerPromise) {
+                  readerPromise = reader.read().then((result) => ({
                     type: 'reader' as const,
                     result,
                   }))
-                  .catch((e) => {
-                    console.error('Failed to read from Redis', e)
-                    return {
-                      type: 'reader' as const,
-                      result: {
-                        done: false,
-                        value: new TextEncoder().encode(REDIS_CATCH),
-                      },
-                    }
-                  })
-              }
-
-              const timeoutPromise = new Promise<{ type: 'timeout' }>(
-                (resolve) =>
-                  setTimeout(() => resolve({ type: 'timeout' }), 5000),
-              )
-              const result = await Promise.race([readerPromise, timeoutPromise])
-
-              // if (resFrom + 10_000 < Date.now()) {
-              //   reader.cancel()
-              //   const res = await redisSubscribe({ key: 'party' })
-              //   if (!res.ok || !res.body) {
-              //     console.error('Failed to subscribe to Redis')
-              //     return
-              //   }
-              //   reader = res.body.getReader()
-              //   resFrom = Date.now()
-              //   streamToast({
-              //     title: 'Resubscribing to Redis',
-              //   })
-              //   continue
-              // }
-
-              if (result.type === 'timeout') {
-                const message = `Still there. Iteration ${++count}. Run for ${
-                  (new Date().getTime() - startedAt.getTime()) / 1000
-                } seconds`
-                console.log(message)
-                streamToast({
-                  title: message,
-                })
-              }
-
-              if (result.type === 'reader') {
-                const { done, value } = result.result
-                readerPromise = null
-                const text = new TextDecoder().decode(value)
-                if (text === REDIS_CATCH) {
-                  const res = await redisSubscribe({ key: 'party' })
-                  if (!res.ok || !res.body) {
-                    console.error('Failed to subscribe to Redis')
-                    return
-                  }
-                  reader = res.body.getReader()
-                  resFrom = Date.now()
-                  streamToast({
-                    title: 'Catch Reeader Promise. Res',
-                  })
-                  continue
                 }
-                message += text
-                const parts = message.split('\n')
-                console.log('parts', parts)
-                const dataPart = parts.find((part) =>
-                  part.includes('data: message,party,'),
+
+                const timeoutPromise = new Promise<{ type: 'timeout' }>(
+                  (resolve) =>
+                    setTimeout(() => resolve({ type: 'timeout' }), 5000),
                 )
-                console.log('dataPart', dataPart)
+                const result = await Promise.race([
+                  readerPromise,
+                  timeoutPromise,
+                ])
 
-                if (dataPart) {
-                  try {
-                    const jsonString = dataPart.replace(
-                      'data: message,party,',
-                      '',
-                    )
-                    console.log('jsonString', jsonString)
-                    const finalMessage = JSON.parse(jsonString)
-                    console.log('finalMessage', finalMessage)
-                    data = finalMessage.data
-                    streamToast({
-                      title: `You said: ${data}`,
-                    })
-                    break
-                  } catch (error) {}
+                if (resFrom + 10_000 < Date.now()) {
+                  throw new Error('Premature timeout')
                 }
+
+                if (result.type === 'timeout') {
+                  const message = `Still there. Iteration ${++count}. Run for ${
+                    (new Date().getTime() - startedAt.getTime()) / 1000
+                  } seconds`
+                  console.log(message)
+                  streamToast({
+                    title: message,
+                  })
+                }
+
+                if (result.type === 'reader') {
+                  const { done, value } = result.result
+                  readerPromise = null
+                  const text = new TextDecoder().decode(value)
+                  message += text
+                  const parts = message.split('\n')
+                  console.log('parts', parts)
+                  const dataPart = parts.find((part) =>
+                    part.includes('data: message,party,'),
+                  )
+                  console.log('dataPart', dataPart)
+
+                  if (dataPart) {
+                    try {
+                      const jsonString = dataPart.replace(
+                        'data: message,party,',
+                        '',
+                      )
+                      console.log('jsonString', jsonString)
+                      const finalMessage = JSON.parse(jsonString)
+                      console.log('finalMessage', finalMessage)
+                      data = finalMessage.data
+                      streamToast({
+                        title: `You said: ${data}`,
+                      })
+                      break
+                    } catch (error) {}
+                  }
+                }
+              } catch (error) {
+                const oldReader = reader
+                const res = await redisSubscribe({ key: 'party' })
+                if (!res.ok || !res.body) {
+                  console.error('Failed to subscribe to Redis')
+                  return
+                }
+                reader = res.body.getReader()
+                resFrom = Date.now()
+                streamToast({
+                  title: 'Resubscribing to Redis',
+                })
+                oldReader.cancel()
               }
             }
             // reader.cancel()
