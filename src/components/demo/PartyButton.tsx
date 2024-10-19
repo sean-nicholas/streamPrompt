@@ -72,7 +72,7 @@ export const PartyButton = () => {
                   timeoutPromise,
                 ])
 
-                if (resFrom + 10_000 < Date.now()) {
+                if (resFrom + 55_000 < Date.now()) {
                   throw new Error('Premature timeout')
                 }
 
@@ -124,6 +124,7 @@ export const PartyButton = () => {
                 }
                 reader = res.body.getReader()
                 resFrom = Date.now()
+                readerPromise = null
                 streamToast({
                   title: 'Resubscribing to Redis',
                 })
