@@ -18,7 +18,7 @@ export default async function Page() {
                   return `Nice to meet you ${name}!`
                 }
 
-                // Oh no we don't know who said hi. Let's ask them!
+                // Oh no we don't know who said hi. Let's ask them with a nice prompt.
                 const superName = await streamPrompt({
                   prompt: <div>Hi, nice to meet you! What is your name?</div>,
                 })
