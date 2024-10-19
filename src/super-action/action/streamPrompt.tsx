@@ -23,10 +23,7 @@ export const createStreamPrompt =
           prompt={prompt}
           action={async (formData) => {
             'use server'
-            return superAction(async ({ streamDialog, streamToast }) => {
-              streamToast({
-                title: pubSubId,
-              })
+            return superAction(async ({ streamDialog }) => {
               streamDialog(null)
               await redisPublish({
                 key: pubSubId,
