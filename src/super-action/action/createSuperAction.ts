@@ -5,7 +5,6 @@ import {
   isRedirectError,
 } from 'next/dist/client/components/redirect'
 import { ReactNode } from 'react'
-import { z } from 'zod'
 import { createResolvablePromise } from './createResolvablePromise'
 
 export type SuperActionToast = {
@@ -101,17 +100,18 @@ export const superAction = async <Result, Input>(
         return
       }
 
-      const parsed = z
-        .object({
-          message: z.string(),
-        })
-        .safeParse(error)
+      // const parsed = z
+      //   .object({
+      //     message: z.string(),
+      //   })
+      //   .safeParse(error)
 
       complete({
         error: {
-          message: parsed.success
-            ? `hello ${parsed.data?.message}`
-            : 'Unknown error',
+          // message: parsed.success
+          //   ? `hello ${parsed.data?.message}`
+          //   : 'Unknown error',
+          message: (error as any).toString(),
         },
       })
     })
