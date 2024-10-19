@@ -3,6 +3,8 @@ import { superAction } from '@/super-action/action/createSuperAction'
 import { ActionButton } from '@/super-action/button/ActionButton'
 import { PartyPopper } from 'lucide-react'
 
+const REDIS_CATCH = 'REDIS_CATCH'
+
 export const PartyButton = () => {
   return (
     <>
@@ -68,7 +70,7 @@ export const PartyButton = () => {
                       type: 'reader' as const,
                       result: {
                         done: false,
-                        value: new TextEncoder().encode(''),
+                        value: new TextEncoder().encode(REDIS_CATCH),
                       },
                     }
                   })
@@ -80,20 +82,20 @@ export const PartyButton = () => {
               )
               const result = await Promise.race([readerPromise, timeoutPromise])
 
-              if (resFrom + 10_000 < Date.now()) {
-                reader.cancel()
-                const res = await redisSubscribe({ key: 'party' })
-                if (!res.ok || !res.body) {
-                  console.error('Failed to subscribe to Redis')
-                  return
-                }
-                reader = res.body.getReader()
-                resFrom = Date.now()
-                streamToast({
-                  title: 'Resubscribing to Redis',
-                })
-                continue
-              }
+              // if (resFrom + 10_000 < Date.now()) {
+              //   reader.cancel()
+              //   const res = await redisSubscribe({ key: 'party' })
+              //   if (!res.ok || !res.body) {
+              //     console.error('Failed to subscribe to Redis')
+              //     return
+              //   }
+              //   reader = res.body.getReader()
+              //   resFrom = Date.now()
+              //   streamToast({
+              //     title: 'Resubscribing to Redis',
+              //   })
+              //   continue
+              // }
 
               if (result.type === 'timeout') {
                 const message = `Still there. Iteration ${++count}. Run for ${
@@ -109,7 +111,7 @@ export const PartyButton = () => {
                 const { done, value } = result.result
                 readerPromise = null
                 const text = new TextDecoder().decode(value)
-                if (text === '') {
+                if (text === REDIS_CATCH) {
                   const res = await redisSubscribe({ key: 'party' })
                   if (!res.ok || !res.body) {
                     console.error('Failed to subscribe to Redis')
@@ -118,7 +120,7 @@ export const PartyButton = () => {
                   reader = res.body.getReader()
                   resFrom = Date.now()
                   streamToast({
-                    title: 'Catch Reader Promise. Resubscribing to Redis',
+                    title: 'Catch Reeader Promise. Res',
                   })
                   continue
                 }
