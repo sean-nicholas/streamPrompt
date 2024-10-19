@@ -97,17 +97,15 @@ export const PartyButton = () => {
                     const finalMessage = JSON.parse(jsonString)
                     console.log('finalMessage', finalMessage)
                     data = finalMessage.data
+                    streamToast({
+                      title: `You said: ${data}`,
+                    })
                     break
                   } catch (error) {}
                 }
               }
             }
             reader.cancel()
-
-            streamToast({
-              title: `You said: ${data}`,
-            })
-
             // console.log(await res.text())
           })
         }}
