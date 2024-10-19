@@ -12,10 +12,16 @@ export default async function Page() {
           <ActionButton
             action={async () => {
               'use server'
-              return superAction(async ({ streamPrompt, streamToast }) => {
+              return superAction(async ({ streamPrompt, streamDialog }) => {
                 // Just a reminder: Can't send this function to the client.
-                const getGreeting = (name: string) => {
-                  return `Nice to meet you ${name}!`
+                const getGreeting = ({
+                  name,
+                  food,
+                }: {
+                  name: string
+                  food: string
+                }) => {
+                  return `Nice to meet you ${name}! I liked ${food}, too!`
                 }
 
                 // Oh no we don't know who said hi. Let's ask them with a nice prompt.
@@ -23,8 +29,20 @@ export default async function Page() {
                   prompt: <div>Hi, nice to meet you! What is your name?</div>,
                 })
 
-                streamToast({
-                  title: getGreeting(superName),
+                // Ahh and what food do they like?
+                const superFood = await streamPrompt({
+                  prompt: (
+                    <div>Hi {superName}, What is your favorite food?</div>
+                  ),
+                })
+
+                streamDialog({
+                  title: 'Hi!',
+                  content: (
+                    <div>
+                      {getGreeting({ name: superName, food: superFood })}
+                    </div>
+                  ),
                 })
               })
             }}
