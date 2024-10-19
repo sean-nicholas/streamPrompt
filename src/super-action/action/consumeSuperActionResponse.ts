@@ -43,5 +43,14 @@ export const consumeSuperActionResponse = async <Result, Input>(options: {
   if (r.next) {
     return await consumeSuperActionResponse({ ...options, response: r.next })
   }
+  if (r.heartbeat) {
+    console.log(
+      `heartbeat. Server: ${new Date(
+        r.heartbeat.timestamp,
+      ).toISOString()} Client: ${new Date().toISOString()} Diff: ${
+        Date.now() - r.heartbeat.timestamp
+      }ms`,
+    )
+  }
   return r.result
 }

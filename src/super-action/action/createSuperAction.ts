@@ -6,6 +6,7 @@ import {
 } from 'next/dist/client/components/redirect'
 import { ReactNode } from 'react'
 import { createResolvablePromise } from './createResolvablePromise'
+import { createStreamPrompt, SuperActionPrompt } from './streamPrompt'
 
 export type SuperActionToast = {
   title?: string
@@ -37,9 +38,12 @@ export type SuperActionResponse<Result, Input> = {
   error?: SuperActionError
   redirect?: SuperActionRedirect
   action?: SuperAction<Result, undefined>
+  heartbeat?: {
+    timestamp: number
+  }
 }
 
-type SuperActionContext<Result, Input> = {
+export type SuperActionContext<Result, Input> = {
   chain: (val: SuperActionResponse<Result, Input>) => void
 }
 
@@ -49,6 +53,7 @@ export const superAction = async <Result, Input>(
   action: (options: {
     streamDialog: (dialog: SuperActionDialog) => void
     streamToast: (toast: SuperActionToast) => void
+    streamPrompt: (prompt: SuperActionPrompt) => Promise<string>
   }) => Promise<Result>,
 ) => {
   let next = createResolvablePromise<SuperActionResponse<Result, Input>>()
@@ -78,8 +83,10 @@ export const superAction = async <Result, Input>(
     ctx.chain({ toast })
   }
 
+  const streamPrompt = createStreamPrompt({ ctx })
+
   // Execute Action:
-  action({ streamDialog, streamToast })
+  action({ streamDialog, streamToast, streamPrompt })
     .then((result) => {
       complete({ result })
     })
@@ -126,6 +133,16 @@ export type SuperAction<Result, Input> = (
 
 export type SuperActionWithInput<Input> = SuperAction<unknown, Input>
 export type SuperActionWithResult<Result> = SuperAction<Result, unknown>
+
+export const createStreamDialog = <Result, Input>({
+  ctx,
+}: {
+  ctx: SuperActionContext<Result, Input>
+}) => {
+  return (dialog: SuperActionDialog) => {
+    ctx.chain({ dialog })
+  }
+}
 
 // export const streamToast = (toast: SuperActionToast) => {
 //   const ctx = serverContext.getOrThrow()
