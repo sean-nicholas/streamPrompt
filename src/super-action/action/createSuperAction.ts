@@ -111,7 +111,7 @@ export const superAction = async <Result, Input>(
           // message: parsed.success
           //   ? `hello ${parsed.data?.message}`
           //   : 'Unknown error',
-          message: (error as any).toString(),
+          message: error as any,
         },
       })
     })
