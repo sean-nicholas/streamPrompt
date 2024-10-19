@@ -13,13 +13,18 @@ export default async function Page() {
             action={async () => {
               'use server'
               return superAction(async ({ streamPrompt, streamToast }) => {
+                // Just a reminder: Can't send this function to the client.
+                const getGreeting = (name: string) => {
+                  return `Nice to meet you ${name}!`
+                }
+
                 // Oh no we don't know who said hi. Let's ask them!
-                const name = await streamPrompt({
+                const superName = await streamPrompt({
                   prompt: <div>Hi, nice to meet you! What is your name?</div>,
                 })
 
                 streamToast({
-                  title: `Nice to meet you ${name}!`,
+                  title: getGreeting(superName),
                 })
               })
             }}
