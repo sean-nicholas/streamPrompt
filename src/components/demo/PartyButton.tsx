@@ -19,17 +19,22 @@ export const PartyButton = () => {
           'use server'
 
           return superAction(async ({ streamToast }) => {
-            console.log(`started at ${new Date().toISOString()}`)
+            const startedAt = new Date()
+            console.log(`started at ${startedAt.toISOString()}`)
             streamToast({
               title: 'Party Streaming...',
               // content: <div className="flex gap-2">hi</div>,
             })
 
+            let count = 0
             while (true) {
-              await new Promise((resolve) => setTimeout(resolve, 10_000))
-              console.log('Still there at ', new Date().toISOString())
+              await new Promise((resolve) => setTimeout(resolve, 5_000))
+              const message = `Still there. Iteration ${++count}. Run for ${
+                (new Date().getTime() - startedAt.getTime()) / 1000
+              } seconds`
+              console.log(message)
               streamToast({
-                title: `Still there at ${new Date().toISOString()}`,
+                title: message,
               })
             }
 
