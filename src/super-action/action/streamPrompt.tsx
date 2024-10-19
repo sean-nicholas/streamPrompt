@@ -15,7 +15,7 @@ export const createStreamPrompt =
   ({ prompt }: SuperActionPrompt) => {
     const streamDialog = createStreamDialog({ ctx })
 
-    // const pubSubId = self.crypto.randomUUID()
+    const pubSubId = self.crypto.randomUUID()
 
     streamDialog({
       content: (
@@ -23,10 +23,13 @@ export const createStreamPrompt =
           prompt={prompt}
           action={async (formData) => {
             'use server'
-            return superAction(async ({ streamDialog }) => {
+            return superAction(async ({ streamDialog, streamToast }) => {
+              streamToast({
+                title: pubSubId,
+              })
               streamDialog(null)
               await redisPublish({
-                key: 'party',
+                key: pubSubId,
                 data: formData.get('answer')?.toString() ?? 'Unknown Answer',
               })
             })
@@ -35,7 +38,7 @@ export const createStreamPrompt =
       ),
     })
     return new Promise<string>(async (resolve, reject) => {
-      const res = await redisSubscribe({ key: 'party' })
+      const res = await redisSubscribe({ key: pubSubId })
       if (!res.ok || !res.body) {
         console.error('Failed to subscribe to Redis')
         return
@@ -86,12 +89,15 @@ export const createStreamPrompt =
             message += text
             const parts = message.split('\n')
             const dataPart = parts.find((part) =>
-              part.includes('data: message,party,'),
+              part.includes(`data: message,${pubSubId},`),
             )
 
             if (dataPart) {
               try {
-                const jsonString = dataPart.replace('data: message,party,', '')
+                const jsonString = dataPart.replace(
+                  `data: message,${pubSubId},`,
+                  '',
+                )
                 const finalMessage = JSON.parse(jsonString)
                 data = finalMessage.data
                 resolve(data)
@@ -101,7 +107,7 @@ export const createStreamPrompt =
           }
         } catch (error) {
           const oldReader = reader
-          const res = await redisSubscribe({ key: 'party' })
+          const res = await redisSubscribe({ key: pubSubId })
           if (!res.ok || !res.body) {
             reject(new Error('Failed to subscribe to Redis'))
             return
