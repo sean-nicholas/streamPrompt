@@ -30,7 +30,7 @@ export const PartyButton = () => {
               streamToast({
                 title: `Still there at ${new Date().toISOString()}`,
               })
-            }, 20_000)
+            }, 15_000)
 
             const res = await redisSubscribe({ key: 'party' })
             if (!res.ok || !res.body) {
