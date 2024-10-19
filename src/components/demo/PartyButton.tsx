@@ -105,7 +105,7 @@ export const PartyButton = () => {
                 }
               }
             }
-            reader.cancel()
+            // reader.cancel()
             // console.log(await res.text())
           })
         }}
