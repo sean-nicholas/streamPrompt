@@ -56,10 +56,22 @@ export const PartyButton = () => {
             }> | null = null
             while (true) {
               if (!readerPromise) {
-                readerPromise = reader.read().then((result) => ({
-                  type: 'reader' as const,
-                  result,
-                }))
+                readerPromise = reader
+                  .read()
+                  .then((result) => ({
+                    type: 'reader' as const,
+                    result,
+                  }))
+                  .catch((e) => {
+                    console.error('Failed to read from Redis', e)
+                    return {
+                      type: 'reader' as const,
+                      result: {
+                        done: false,
+                        value: new TextEncoder().encode(''),
+                      },
+                    }
+                  })
               }
 
               const timeoutPromise = new Promise<{ type: 'timeout' }>(
@@ -68,7 +80,7 @@ export const PartyButton = () => {
               )
               const result = await Promise.race([readerPromise, timeoutPromise])
 
-              if (resFrom + 30_000 < Date.now()) {
+              if (resFrom + 10_000 < Date.now()) {
                 reader.cancel()
                 const res = await redisSubscribe({ key: 'party' })
                 if (!res.ok || !res.body) {
@@ -97,6 +109,19 @@ export const PartyButton = () => {
                 const { done, value } = result.result
                 readerPromise = null
                 const text = new TextDecoder().decode(value)
+                if (text === '') {
+                  const res = await redisSubscribe({ key: 'party' })
+                  if (!res.ok || !res.body) {
+                    console.error('Failed to subscribe to Redis')
+                    return
+                  }
+                  reader = res.body.getReader()
+                  resFrom = Date.now()
+                  streamToast({
+                    title: 'Catch Reader Promise. Resubscribing to Redis',
+                  })
+                  continue
+                }
                 message += text
                 const parts = message.split('\n')
                 console.log('parts', parts)
