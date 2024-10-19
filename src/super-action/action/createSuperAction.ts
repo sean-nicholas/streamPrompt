@@ -105,13 +105,9 @@ export const superAction = async <Result, Input>(
       //     message: z.string(),
       //   })
       //   .safeParse(error)
-
       complete({
         error: {
-          // message: parsed.success
-          //   ? `hello ${parsed.data?.message}`
-          //   : 'Unknown error',
-          message: error as any,
+          message: error instanceof Error ? error.stack : String(error),
         },
       })
     })
