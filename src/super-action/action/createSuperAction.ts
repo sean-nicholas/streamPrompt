@@ -109,7 +109,9 @@ export const superAction = async <Result, Input>(
 
       complete({
         error: {
-          message: parsed.success ? parsed.data?.message : 'Unknown error',
+          message: parsed.success
+            ? `hello ${parsed.data?.message}`
+            : 'Unknown error',
         },
       })
     })
