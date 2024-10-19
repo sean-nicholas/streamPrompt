@@ -116,6 +116,9 @@ export const PartyButton = () => {
                   }
                 }
               } catch (error) {
+                streamToast({
+                  title: 'Starting resubscribing to Redis',
+                })
                 const oldReader = reader
                 const res = await redisSubscribe({ key: 'party' })
                 if (!res.ok || !res.body) {
@@ -130,7 +133,7 @@ export const PartyButton = () => {
                 }))
                 oldReader.cancel()
                 streamToast({
-                  title: 'Resubscribing to Redis',
+                  title: 'Resubscribed to Redis',
                 })
               }
             }
