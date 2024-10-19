@@ -20,6 +20,7 @@ export const PartyButton = () => {
           'use server'
 
           return superAction(async ({ streamToast }) => {
+            console.log(`started at ${new Date().toISOString()}`)
             streamToast({
               title: 'Party Streaming...',
               // content: <div className="flex gap-2">hi</div>,
@@ -30,7 +31,7 @@ export const PartyButton = () => {
               streamToast({
                 title: `Still there at ${new Date().toISOString()}`,
               })
-            }, 15_000)
+            }, 10_000)
 
             const res = await redisSubscribe({ key: 'party' })
             if (!res.ok || !res.body) {
