@@ -16,6 +16,7 @@ export const PartyButton = () => {
           },
         }}
         icon={<PartyPopper />}
+        catchToast
         action={async () => {
           'use server'
 
@@ -44,7 +45,8 @@ export const PartyButton = () => {
               console.error('Failed to subscribe to Redis')
               return
             }
-            const reader = res.body.getReader()
+            let reader = res.body.getReader()
+            let resFrom = Date.now()
             let message = ''
             let data = null
             let count = 0
@@ -65,6 +67,22 @@ export const PartyButton = () => {
                   setTimeout(() => resolve({ type: 'timeout' }), 5000),
               )
               const result = await Promise.race([readerPromise, timeoutPromise])
+
+              if (resFrom + 55_000 < Date.now()) {
+                reader.cancel()
+                const res = await redisSubscribe({ key: 'party' })
+                if (!res.ok || !res.body) {
+                  console.error('Failed to subscribe to Redis')
+                  return
+                }
+                reader = res.body.getReader()
+                resFrom = Date.now()
+                streamToast({
+                  title: 'Resubscribing to Redis',
+                })
+                continue
+              }
+
               if (result.type === 'timeout') {
                 const message = `Still there. Iteration ${++count}. Run for ${
                   (new Date().getTime() - startedAt.getTime()) / 1000
