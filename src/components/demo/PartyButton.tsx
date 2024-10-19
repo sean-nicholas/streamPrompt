@@ -68,7 +68,7 @@ export const PartyButton = () => {
               )
               const result = await Promise.race([readerPromise, timeoutPromise])
 
-              if (resFrom + 55_000 < Date.now()) {
+              if (resFrom + 30_000 < Date.now()) {
                 reader.cancel()
                 const res = await redisSubscribe({ key: 'party' })
                 if (!res.ok || !res.body) {
