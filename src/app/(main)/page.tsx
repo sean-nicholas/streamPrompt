@@ -21,7 +21,7 @@ export default async function Page() {
                   name: string
                   food: string
                 }) => {
-                  return `Nice to meet you ${name}! I liked ${food}, too!`
+                  return `Nice to meet you ${name}! I like ${food}, too!`
                 }
 
                 // Oh no we don't know who said hi. Let's ask them with a nice prompt.
